@@ -1,0 +1,123 @@
+openapi: 3.0.3
+info:
+  title: Demo OData v4-style API (OpenAPI Wrapper)
+  version: 1.0.0
+  description: |
+    Minimal OpenAPI description over the OData-style endpoints exposed by the service.
+    The canonical OData metadata is available at `/odata/$metadata` (EDMX).
+servers:
+  - url: http://localhost:4002
+paths:
+  /odata/$metadata:
+    get:
+      summary: OData EDMX metadata
+      responses:
+        "200":
+          description: EDMX metadata document
+          content:
+            application/xml:
+              schema:
+                type: string
+  /odata/Products:
+    get:
+      summary: List Products
+      parameters:
+        - $ref: "#/components/parameters/$select"
+        - $ref: "#/components/parameters/$filter"
+        - $ref: "#/components/parameters/$orderby"
+        - $ref: "#/components/parameters/$top"
+        - $ref: "#/components/parameters/$skip"
+        - $ref: "#/components/parameters/$expand"
+      responses:
+        "200":
+          description: Product collection
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  @odata.context:
+                    type: string
+                  value:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/Product"
+  /odata/Categories:
+    get:
+      summary: List Categories
+      parameters:
+        - $ref: "#/components/parameters/$select"
+        - $ref: "#/components/parameters/$filter"
+        - $ref: "#/components/parameters/$orderby"
+        - $ref: "#/components/parameters/$top"
+        - $ref: "#/components/parameters/$skip"
+        - $ref: "#/components/parameters/$expand"
+      responses:
+        "200":
+          description: Category collection
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  @odata.context:
+                    type: string
+                  value:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/Category"
+components:
+  parameters:
+    $select:
+      name: $select
+      in: query
+      required: false
+      schema: { type: string }
+      description: Comma-separated projection list
+    $filter:
+      name: $filter
+      in: query
+      required: false
+      schema: { type: string }
+      description: Filter expression (supports eq, gt, lt; and/or)
+    $orderby:
+      name: $orderby
+      in: query
+      required: false
+      schema: { type: string }
+      description: Order by field and optional direction (e.g., `Price desc`)
+    $top:
+      name: $top
+      in: query
+      required: false
+      schema: { type: integer, minimum: 0 }
+    $skip:
+      name: $skip
+      in: query
+      required: false
+      schema: { type: integer, minimum: 0 }
+    $expand:
+      name: $expand
+      in: query
+      required: false
+      schema: { type: string }
+      description: Comma-separated navigation properties to expand
+  schemas:
+    Product:
+      type: object
+      properties:
+        Id: { type: integer }
+        Name: { type: string }
+        Price: { type: number, format: double }
+        CategoryId: { type: integer, nullable: true }
+        Category:
+          $ref: "#/components/schemas/Category"
+    Category:
+      type: object
+      properties:
+        Id: { type: integer }
+        Name: { type: string }
+        Products:
+          type: array
+          items:
+            $ref: "#/components/schemas/Product"
